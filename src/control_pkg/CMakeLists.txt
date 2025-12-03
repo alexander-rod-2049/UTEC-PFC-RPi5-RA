@@ -14,6 +14,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(ros2_roboclaw_driver REQUIRED)
+find_package(std_msgs REQUIRED)
 
 add_executable(system_id_logger src/system_id_logger.cpp)
 ament_target_dependencies(system_id_logger
@@ -22,6 +23,9 @@ ament_target_dependencies(system_id_logger
   nav_msgs
   sensor_msgs
   ros2_roboclaw_driver
+  std_msgs
+  tf2_ros
+  tf2_ros
 )
 
 install(TARGETS

@@ -14,7 +14,7 @@ fi
 
 # Sourcear el workspace
 echo "Sourceando el workspace PFCII..."
-source ~/PFCII/pfc2_ws/install/local_setup.bash
+source ~/PFCII/pfc2_ws/install/setup.bash
 echo "✓ Workspace sourceado"
 
 # Verificación completa
@@ -38,8 +38,11 @@ colcon list --names-only 2>/dev/null || echo " - (Usa 'colcon list' para ver los
 echo "Comandos a usar:"
 echo "ros2 launch ros2_roboclaw_driver ros2_roboclaw_driver.launch.py"
 echo "ros2 topic list"
-echo "ros2 topic pub -r 10 /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.2, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.1}}'"
+echo "ros2 topic pub -r 10 /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.05, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'"
 echo "ls -l /dev/ttyACM*"
+#echo "ros2 run teleop_twist_keyboard teleop_twist_keyboard"
+echo "ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p speed:=0.15 -p turn:=0.15"
 
 echo ""
 echo "Inicialización completada. Workspace listo para usar."
+
