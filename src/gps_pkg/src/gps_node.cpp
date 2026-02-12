@@ -12,6 +12,14 @@
 #include <filesystem>
 #include <algorithm>
 #include <glob.h>
+#include <fstream>
+#include <cstdlib>
+
+struct GpsDataPoint {
+    double timestamp;
+    double lat, lon, alt;
+    double x, y, z;
+};
 
 class GpsNode : public rclcpp::Node
 {
@@ -25,8 +33,10 @@ public:
             
         // Buffer de 100 muestras como pidió el usuario para mayor suavizado
         buffer_size_ = 100;
+        start_time_ = this->now();
+        has_fix_ = false;
         
-        RCLCPP_INFO(this->get_logger(), "🚀 Nodo GPS (C++) iniciado. Buffer: %zu muestras", buffer_size_);
+        RCLCPP_INFO(this->get_logger(), "🚀 Nodo GPS (C++) iniciado. Buffer: %zu muestras. Grabando datos...", buffer_size_);
     }
 
     ~GpsNode()
@@ -34,6 +44,8 @@ public:
         if (serial_fd_ >= 0) {
             close(serial_fd_);
         }
+        save_data_to_csv();
+        plot_data();
     }
 
 private:
@@ -138,9 +150,6 @@ private:
                 // Limpiar CR
                 if (!line.empty() && line.back() == '\r') line.pop_back();
                 
-                // DEBUG TEMPORAL
-                // RCLCPP_INFO(this->get_logger(), "RAW: %s", line.c_str());
-                
                 parse_nmea(line);
             }
         } else if (n < 0 && errno != EAGAIN) {
@@ -163,11 +172,6 @@ private:
             }
             
             if (parts.size() < 10) return;
-            
-            // parts[2] = Lat (ddmm.mmmmm), parts[3] = N/S
-            // parts[4] = Lon (dddmm.mmmmm), parts[5] = E/W
-            // parts[6] = Fix (1=GPS, 2=DGPS)
-            // parts[9] = Alt
             
             try {
                 int fix = 0;
@@ -206,6 +210,40 @@ private:
                     double avg_lon = std::accumulate(lon_buffer_.begin(), lon_buffer_.end(), 0.0) / lon_buffer_.size();
                     double avg_alt = std::accumulate(alt_buffer_.begin(), alt_buffer_.end(), 0.0) / alt_buffer_.size();
                     
+                    // Si es el primer fix válido, establecer como origen (0,0,0)
+                    if (!has_fix_) {
+                        start_lat_ = avg_lat;
+                        start_lon_ = avg_lon;
+                        start_alt_ = avg_alt;
+                        has_fix_ = true;
+                        RCLCPP_INFO(this->get_logger(), "🌍 Origen establecido: Lat=%.6f, Lon=%.6f, Alt=%.1fm", start_lat_, start_lon_, start_alt_);
+                    }
+
+                    // Calcular X, Y, Z relativos (en metros)
+                    // Aproximación de tierra plana local
+                    // 1 deg Lat ~= 111132 m
+                    // 1 deg Lon ~= 111132 * cos(lat) m
+                    double d_lat = avg_lat - start_lat_;
+                    double d_lon = avg_lon - start_lon_;
+                    
+                    const double DEG_TO_RAD = M_PI / 180.0;
+                    const double METERS_PER_DEG = 111132.0; // Aproximado
+                    
+                    double x = d_lon * METERS_PER_DEG * std::cos(start_lat_ * DEG_TO_RAD);
+                    double y = d_lat * METERS_PER_DEG;
+                    double z = avg_alt - start_alt_;
+
+                    // Guardar en log (historial completo)
+                    GpsDataPoint dp;
+                    dp.timestamp = (this->now() - start_time_).seconds();
+                    dp.lat = avg_lat;
+                    dp.lon = avg_lon;
+                    dp.alt = avg_alt;
+                    dp.x = x;
+                    dp.y = y;
+                    dp.z = z;
+                    data_log_.push_back(dp);
+
                     auto msg = sensor_msgs::msg::NavSatFix();
                     msg.header.stamp = this->now();
                     msg.header.frame_id = "gps";
@@ -216,14 +254,48 @@ private:
                     
                     publisher_->publish(msg);
                     
-                    RCLCPP_INFO(this->get_logger(), "🎯 FILTERED (C++): Lat=%.6f, Lon=%.6f, Alt=%.1fm (Sats: %zu)", 
-                        avg_lat, avg_lon, avg_alt, lat_buffer_.size());
+                    // RCLCPP_INFO(this->get_logger(), "🎯 FILTERED (C++): Lat=%.6f, Lon=%.6f, Alt=%.1fm (Sats: %zu)", 
+                    //    avg_lat, avg_lon, avg_alt, lat_buffer_.size());
                 } else {
-                     RCLCPP_WARN(this->get_logger(), "⚠️ GPS sin fix válido (C++)");
+                     // RCLCPP_WARN(this->get_logger(), "⚠️ GPS sin fix válido (C++)");
+                     
+                     // Opcional: Guardar 0 o NAN para indicar falta de datos si se desea ver el tiempo
+                     // O solo guardar puntos validos
                 }
             } catch (...) {
                 RCLCPP_ERROR(this->get_logger(), "Error parsing NMEA: %s", line.c_str());
             }
+        }
+    }
+
+    void save_data_to_csv()
+    {
+        // Ruta absoluta a la carpeta 'data' del workspace
+        std::string path = "/home/rmf209/PFCII/pfc2_ws/data/gps_data.csv";
+        std::ofstream file(path);
+        if (file.is_open()) {
+            file << "timestamp,lat,lon,alt,x,y,z\n";
+            for (const auto& dp : data_log_) {
+                file << dp.timestamp << "," << dp.lat << "," << dp.lon << "," << dp.alt << "," << dp.x << "," << dp.y << "," << dp.z << "\n";
+            }
+            file.close();
+            RCLCPP_INFO(this->get_logger(), "💾 GPS Data saved to %s (%zu samples)", path.c_str(), data_log_.size());
+        } else {
+            RCLCPP_ERROR(this->get_logger(), "❌ Could not open file to save GPS data at %s", path.c_str());
+        }
+    }
+    
+    void plot_data()
+    {
+        std::string data_path = "/home/rmf209/PFCII/pfc2_ws/data/gps_data.csv";
+        RCLCPP_INFO(this->get_logger(), "📈 Opening GPS Plotter for %s...", data_path.c_str());
+        
+        std::string cmd = "ros2 run gps_pkg plotter.py gps " + data_path;
+        int ret = system(cmd.c_str());
+        if (ret != 0) {
+             RCLCPP_WARN(this->get_logger(), "Failed to run plotter via 'ros2 run', trying direct path...");
+             std::string fallback = "python3 /home/rmf209/PFCII/pfc2_ws/src/gps_pkg/scripts/plotter.py gps " + data_path;
+             system(fallback.c_str());
         }
     }
 
@@ -237,6 +309,14 @@ private:
     std::deque<double> lat_buffer_;
     std::deque<double> lon_buffer_;
     std::deque<double> alt_buffer_;
+    
+    rclcpp::Time start_time_;
+    std::vector<GpsDataPoint> data_log_;
+    
+    bool has_fix_ = false;
+    double start_lat_ = 0.0;
+    double start_lon_ = 0.0;
+    double start_alt_ = 0.0;
 };
 
 int main(int argc, char * argv[])

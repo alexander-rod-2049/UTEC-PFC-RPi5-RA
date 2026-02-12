@@ -41,16 +41,34 @@ private:
     void latRCb(const geometry_msgs::msg::TwistStamped::SharedPtr msg) { v_lat_R = msg->twist.linear.x; }
 
     void loop() {
-        double slip_L = (std::abs(v_enc_L) > 0.05) ? 1.0 - (v_lat_L / v_enc_L) : 0.0;
-        double slip_R = (std::abs(v_enc_R) > 0.05) ? 1.0 - (v_lat_R / v_enc_R) : 0.0;
-        
-        if (slip_L > 1.0) slip_L = 1.0; if (slip_L < -0.5) slip_L = -0.5;
-        if (slip_R > 1.0) slip_R = 1.0; if (slip_R < -0.5) slip_R = -0.5;
+        double v_thresh = 0.05; // Umbral mínimo de velocidad (5 cm/s)
 
+        // SLIP IZQUIERDA
+        double slip_L = 0.0;
+        if (std::abs(v_enc_L) > v_thresh) {
+            slip_L = 1.0 - (v_lat_L / v_enc_L);
+        }
+        
+        // SLIP DERECHA
+        double slip_R = 0.0;
+        if (std::abs(v_enc_R) > v_thresh) {
+            slip_R = 1.0 - (v_lat_R / v_enc_R);
+        }
+        
+        // SATURACIÓN (Para que no salga -500 o NaN en gráficas)
+        // Slip físico real está entre 0 y 1. Permitimos un margen por ruido.
+        if (slip_L > 1.0) slip_L = 1.0; 
+        if (slip_L < -0.5) slip_L = -0.5;
+
+        if (slip_R > 1.0) slip_R = 1.0; 
+        if (slip_R < -0.5) slip_R = -0.5;
+
+        // Publicar
         std_msgs::msg::Float64 m;
         m.data = slip_L; pub_slip_L_->publish(m);
         m.data = slip_R; pub_slip_R_->publish(m);
     }
+
 };
 
 int main(int argc, char **argv) {

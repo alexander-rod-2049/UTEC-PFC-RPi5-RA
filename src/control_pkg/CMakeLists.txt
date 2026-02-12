@@ -28,8 +28,16 @@ ament_target_dependencies(system_id_logger
   tf2_ros
 )
 
+add_executable(point_control_node src/point_control_node.cpp)
+ament_target_dependencies(point_control_node
+  rclcpp
+  geometry_msgs
+  nav_msgs
+)
+
 install(TARGETS
   system_id_logger
+  point_control_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

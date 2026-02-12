@@ -8,16 +8,19 @@ ekf_filter_node:
     base_link_frame: base_link
     world_frame: odom
 
-    # ENCODERS
+    # --- SENSORES ---
+    
+    # 1. ENCODERS
     odom0: /odometry/encoders
     odom0_config: [false, false, false,
                    false, false, false,
-                   true,  false, false, # vx (COVARIANZA ALTA)
+                   true,  false, false, # vx
                    false, false, true,  # wz
                    false, false, false]
-    odom0_twist_covariance_diagonal: [100.0, 0.0, 0.0, 0.0, 0.0, 0.1]
+    # NUNCA USAR 0.0. Usar 1e-9 para variables que no usamos.
+    odom0_twist_covariance_diagonal: [100.0, 1e-9, 1e-9, 1e-9, 1e-9, 0.1]
 
-    # IMU CENTRAL (Referencia Principal)
+    # 2. IMU CENTRAL
     imu0: /imu/central/data
     imu0_config: [false, false, false,
                   false, false, true,   # Yaw
@@ -29,32 +32,66 @@ ekf_filter_node:
     imu0_linear_acceleration_covariance: 0.1
     imu0_angular_velocity_covariance: 0.001
 
-    # IMU IZQUIERDA (Velocidad Estimada)
+    # 3. IMU IZQUIERDA
     odom1: /track/velocity/left
     odom1_config: [false, false, false,
                    false, false, false,
-                   true,  false, false, # vx (Deteccion Slip)
+                   true,  false, false, # vx
                    false, false, true,  # wz
                    false, false, false]
-    odom1_twist_covariance_diagonal: [0.05, 0.0, 0.0, 0.0, 0.0, 0.01]
+    odom1_twist_covariance_diagonal: [0.05, 1e-9, 1e-9, 1e-9, 1e-9, 0.01]
 
-    # IMU DERECHA (Velocidad Estimada)
+    # 4. IMU DERECHA
     odom2: /track/velocity/right
     odom2_config: [false, false, false,
                    false, false, false,
                    true,  false, false, # vx
                    false, false, true,  # wz
                    false, false, false]
-    odom2_twist_covariance_diagonal: [0.05, 0.0, 0.0, 0.0, 0.0, 0.01]
+    odom2_twist_covariance_diagonal: [0.05, 1e-9, 1e-9, 1e-9, 1e-9, 0.01]
 
-    # MAGNETOMETRO (Norte Absoluto)
+    # 5. MAGNETÓMETRO
     imu1: /mag/gps/data
     imu1_config: [false, false, false,
-                  false, false, true, # Yaw Absoluto
+                  false, false, true,  # Yaw
                   false, false, false,
                   false, false, false,
                   false, false, false]
     imu1_differential: false
     imu1_relative: false
-    magnetic_declination_radians: -0.087 # Lima
-    imu1_pose_covariance_diagonal: [0.0, 0.0, 0.0, 0.0, 0.0, 0.05]
+    magnetic_declination_radians: -0.087 
+    imu1_pose_covariance_diagonal: [1e-9, 1e-9, 1e-9, 1e-9, 1e-9, 0.05]
+
+    # --- MATRICES DE PROCESO (CRÍTICO PARA EVITAR NaN) ---
+    # La diagonal principal debe tener valores pequeños, NO CEROS.
+    process_noise_covariance: [0.05, 0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                               0,    0.05, 0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                               0,    0,    0.06, 0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                               0,    0,    0,    0.03, 0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                               0,    0,    0,    0,    0.03, 0,    0,     0,     0,    0,    0,    0,    0,    0,    0,
+                               0,    0,    0,    0,    0,    0.06, 0,     0,     0,    0,    0,    0,    0,    0,    0,
+                               0,    0,    0,    0,    0,    0,    0.025, 0,     0,    0,    0,    0,    0,    0,    0,
+                               0,    0,    0,    0,    0,    0,    0,     0.025, 0,    0,    0,    0,    0,    0,    0,
+                               0,    0,    0,    0,    0,    0,    0,     0,     0.04, 0,    0,    0,    0,    0,    0,
+                               0,    0,    0,    0,    0,    0,    0,     0,     0,    0.01, 0,    0,    0,    0,    0,
+                               0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0.01, 0,    0,    0,    0,
+                               0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0.02, 0,    0,    0,
+                               0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0.01, 0,    0,
+                               0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0.01, 0,
+                               0,    0,    0,    0,    0,    0,    0,     0,     0,    0,    0,    0,    0,    0,    0.015]
+
+    initial_estimate_covariance: [1e-9, 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                  0,    1e-9, 0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                  0,    0,    1e-9, 0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                  0,    0,    0,    1e-9, 0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                  0,    0,    0,    0,    1e-9, 0,    0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                  0,    0,    0,    0,    0,    1e-9, 0,    0,    0,    0,     0,     0,     0,    0,    0,
+                                  0,    0,    0,    0,    0,    0,    1e-9, 0,    0,    0,     0,     0,     0,    0,    0,
+                                  0,    0,    0,    0,    0,    0,    0,    1e-9, 0,    0,     0,     0,     0,    0,    0,
+                                  0,    0,    0,    0,    0,    0,    0,    0,    1e-9, 0,     0,     0,     0,    0,    0,
+                                  0,    0,    0,    0,    0,    0,    0,    0,    0,    1e-9,  0,     0,     0,    0,    0,
+                                  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     1e-9,  0,     0,    0,    0,
+                                  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     1e-9,  0,    0,    0,
+                                  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     1e-9, 0,    0,
+                                  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    1e-9, 0,
+                                  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    1e-9]

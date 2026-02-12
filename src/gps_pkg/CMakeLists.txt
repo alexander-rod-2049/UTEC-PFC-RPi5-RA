@@ -10,6 +10,9 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 add_executable(gps_node src/gps_node.cpp)
 ament_target_dependencies(gps_node rclcpp sensor_msgs)
@@ -25,6 +28,7 @@ install(TARGETS
 install(PROGRAMS
   scripts/visualizer_node.py
   scripts/gps_path_node.py
+  scripts/plotter.py
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY

@@ -53,9 +53,23 @@ private:
     }
 
     void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) {
-        if (first_msg_) { last_time_ = msg->header.stamp; first_msg_ = false; return; }
-        double dt = (rclcpp::Time(msg->header.stamp) - last_time_).seconds();
-        last_time_ = msg->header.stamp;
+        rclcpp::Time now = msg->header.stamp;
+
+        // PROTECCIÓN 1: Inicialización
+        if (first_msg_) { 
+            last_time_ = now; 
+            first_msg_ = false; 
+            return; 
+        }
+
+        double dt = (now - last_time_).seconds();
+        last_time_ = now;
+
+        // PROTECCIÓN 2: dt inválido (Evita NaNs y saltos gigantes)
+        if (dt <= 0.0001 || dt > 1.0) {
+            // Si el tiempo es 0 (división por cero) o > 1s (lag), ignoramos este ciclo
+            return; 
+        }
 
         // 1. Orientación
         tf2::Quaternion q(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);

@@ -9,3 +9,8 @@ __pycache__/
 *.log
 .DS_Store
 *.csv
+*.mcap
+*.png
+pfc_test_*/
+src/OrbbecSDK_ROS2/
+data/
