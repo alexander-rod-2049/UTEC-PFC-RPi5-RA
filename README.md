@@ -1,24 +1,27 @@
-🤖 Guía de Inicio Rápido: Proyecto UTEC-PFC-RPi5-RA (Generado por Gemini AI, for non-common linux users)
+# 🤖 Guía de Inicio Rápido: Proyecto UTEC-PFC-RPi5-RA
+*(Generado por Gemini AI, for non-common linux users)*
+
 Esta guía es para configurar el entorno de trabajo en sus laptops (Ubuntu 24.04 + ROS 2 Jazzy). Sigan los pasos en orden.
 
-🛑 Paso 0: Entender "Git" (Leéme primero)
-Como vamos a trabajar varios en el mismo código, es peligroso trabajar todos directamente en la versión principal (llamada main). Si uno rompe algo, nos rompemos todos.
+## 🛑 Paso 0: Entender "Git" (Leéme primero)
+Como vamos a trabajar varios en el mismo código, es **peligroso** trabajar todos directamente en la versión principal (llamada `main`). Si uno rompe algo, nos rompemos todos.
 
-Para evitar esto, usaremos Branches (Ramas).
+Para evitar esto, usaremos **Branches (Ramas)**.
 
-¿Qué es una Branch?: Imagina que es un "universo paralelo" del código. Puedes hacer cambios, romper cosas y experimentar en tu rama sin afectar al código principal.
+* **¿Qué es una Branch?**: Imagina que es un "universo paralelo" del código. Puedes hacer cambios, romper cosas y experimentar en tu rama sin afectar al código principal.
+* **La Regla de Oro**: Nunca trabajes directo en `main`. Crea tu propia rama.
 
-La Regla de Oro: Nunca trabajes directo en main. Crea tu propia rama.
+---
 
-🚀 Paso 1: Descargar el Código (Clonar)
+## 🚀 Paso 1: Descargar el Código (Clonar)
 Abre tu terminal y ejecuta estos comandos. Esto descargará el proyecto a tu computadora.
 
-Bash
+```bash
 # 1. Ve a tu carpeta de usuario (o donde quieras guardar el proyecto)
 cd ~
 
 # 2. Clona el repositorio principal
-git clone https://github.com/alexander-rod-2049/UTEC-PFC-RPi5-RA.git
+git clone [https://github.com/alexander-rod-2049/UTEC-PFC-RPi5-RA.git](https://github.com/alexander-rod-2049/UTEC-PFC-RPi5-RA.git)
 
 # 3. Entra en la carpeta del proyecto
 cd UTEC-PFC-RPi5-RA
@@ -40,7 +43,7 @@ Bash
 cd src
 
 # 2. Descarga el SDK de la cámara Orbbec (necesario para compilar)
-git clone https://github.com/orbbec/OrbbecSDK_ROS2.git
+git clone [https://github.com/orbbec/OrbbecSDK_ROS2.git](https://github.com/orbbec/OrbbecSDK_ROS2.git)
 
 # 3. Regresa a la raíz del proyecto
 cd ..
@@ -84,8 +87,7 @@ git push --set-upstream origin <nombre-de-tu-branch>
 🆘 Resumen de Comandos Diarios
 Cada vez que empiecen a trabajar:
 
+Bash
 cd UTEC-PFC-RPi5-RA
-
 source install/setup.bash
-
-¡A programar!
+¡A programar! 🤖
