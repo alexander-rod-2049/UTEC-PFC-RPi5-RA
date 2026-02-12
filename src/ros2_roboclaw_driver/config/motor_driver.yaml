@@ -1,0 +1,122 @@
+# The configuration file provides values for the two, differential
+# drive motors, 'm1' and 'm2'. See the article:
+# https://resources.basicmicro.com/auto-tuning-with-motion-studio/
+# for a description of how to derive the p, i, d and qpps values.
+#
+# This configuration file is set up and an example for use with
+# A Raspberry PI 5 using a UART to connect to a RoboClaw motor driver.
+# See the README.md file for more information on how to set up
+# the RoboClaw and the Raspberry PI and how to set values in this file.
+
+# IMPORTANTE: Este nombre debe coincidir con lo que busca el launch file
+ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. Changing this will break parameter loading.
+  ros__parameters:
+    # Incremental acceleration to use in quadrature pulses per second.
+    accel_quad_pulses_per_second: 50000
+
+    # The device name to be opened. Change this to your actual device you are using.
+    # Both USB and UART devices are supported. The device name is the
+    # name of the device as it appears in the /dev directory.
+    device_name: "/dev/ttyACM1"  # REQUIRED. Driver will FATAL if not provided.
+    baud_rate: 38400 # This does not apply when using USB.
+
+    # The assigned port for the device (as configured on the RoboClaw).
+    device_port: 128
+
+    # The P, I, D and maximum quadrature pulses per second for both motors.
+    # These values are for my robot. Replace them with your own values.
+    # Use can use Basic Micro's Motion Studio to determine the values.
+    #Ganancias antiguas, no usar.
+    # m1_p: 1.361066
+    # m1_i: 0.24024
+    # m1_d: 0.0
+    # m1_qpps: 169950
+    # m2_p: 1.380512
+    # m2_i: 0.24367
+    # m2_d: 0.0
+    # m2_qpps: 134640
+
+    # Gananciassintonizadas con Basic Micro Studio.
+    m1_p: 1.0968612
+    m1_i: 0.193604
+    m1_d: 0.0
+    m1_qpps: 158730
+    m2_p: 1.154838
+    m2_i: 0.2165488
+    m2_d: 0.0
+    m2_qpps: 141570
+    # Ganancias a probar para que no se vuelvan locos los motores.
+    # m1_p: 1.3968612
+    # m1_i: 0.0
+    # m1_d: 0.0
+    # m1_qpps: 158730
+    # m2_p: 1.454838
+    # m2_i: 0.0
+    # m2_d: 0.0
+    # m2_qpps: 141570
+
+    # The maximum expected current (in amps) for both motors.
+    # Used just to signal warnings.
+    m1_max_current: 9.0
+    m2_max_current: 9.0
+
+    # Rate limiting commands. The driver will clip any value
+    # exceeding these limits.
+    max_angular_velocity: 0.5
+    max_linear_velocity: 1.0
+
+    # If no new motor commands is received since the last motor
+    # command in this number of seconds, stop the motors.
+    max_seconds_uncommanded_travel: 0.5
+
+    # [NUEVO] Watchdog para cmd_vel. Si no se reciben comandos en este tiempo (ms),
+    # los motores se detendrán.
+    cmd_vel_timeout_ms: 2500 # 500
+
+    # [NUEVO] Detección de velocidad descontrolada (Runaway). Si la velocidad de odometría
+    # supera estos límites, el nodo se apagará por seguridad.
+    max_runaway_linear_velocity: 1.5  # Ligeramente superior a max_linear_velocity
+    max_runaway_angular_velocity: 1.1 # Ligeramente superior a max_angular_velocity
+
+    # [NUEVO] Detección de bloqueo de motor o desconexión de encoder.
+    # Si el motor recibe una orden de moverse por encima de 'qpps_threshold' pero el
+    # encoder no reporta movimiento durante 'period_ms', el nodo se apagará.
+    # stall_detection_period_ms: 500
+    # stall_detection_qpps_threshold: 1000 # Umbral de velocidad (pulsos/seg) para activar la detección
+
+    stall_detection_period_ms: 5000
+    stall_detection_qpps_threshold: 50000 # Umbral de velocidad (pulsos/seg) para activar la detección
+    # NUEVA ESTRUCTURA EN BABY_STEPS
+    publish_joint_states: true
+    joint_state_rate_hz: 20
+
+    publish_odom: true
+    odom_rate_hz: 20
+
+    publish_odom_tf: true
+
+    # Based upon your particular motor gearing and encoders. Importante. Además también dependen de los parámetros de rueda y separación de ruedas.
+    # These values are used to scale cmd_vel commands
+    # and encoder values to motor commands and odometry, respectfully.
+    # Mis motores son DC de 100rpm @24V con reducción 1:47. Encoder óptico 500ppr.
+    quad_pulses_per_meter: 149605 # Fórmula: (quad_pulses_per_revolution) / (π[pi] × diámetro_rueda) 149605.65
+    quad_pulses_per_revolution: 94000.0
+
+    # Based upon y our particular robot model.
+    # The wheel separation and radius, in meters.
+    wheel_radius: 0.1         # REQUIRED > 0
+    wheel_separation: 0.585   # REQUIRED > 0
+
+    # Topic name to be used to publish the RoboClaw status messages.
+    roboclaw_status_topic: "roboclaw_status"
+    loop_sleep_ms: 10
+    
+    # How often to publish /roboclaw_status
+    status_rate_hz: 1
+
+
+    # Debugging control.
+    do_debug: false  # True => Log RoboClaw commands and responses.
+    do_low_level_debug: false # True => Log low-level serial and RoboClaw data.
+
+# EOTHER SECTION
