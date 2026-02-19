@@ -1,16 +1,30 @@
+# ROS 2 Folders
 build/
 install/
 log/
+
+# IDEs
 .vscode/
 .idea/
+
+# Python
 *.pyc
 __pycache__/
+
+# System & Temporary
 *.swp
 *.log
 .DS_Store
+
+# Data & Bags (Crucial para limpiar el repo)
 *.csv
 *.mcap
 *.png
-pfc_test_*/
-src/OrbbecSDK_ROS2/
 data/
+pfc_test_*/
+pfc_oruga_test_*/
+pfc_nav2_test_*/
+imu_ang_vel_debug_*/
+
+# Large SDKs or specific folders
+src/OrbbecSDK_ROS2/
