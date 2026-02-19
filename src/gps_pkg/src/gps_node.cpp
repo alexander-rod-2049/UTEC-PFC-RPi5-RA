@@ -44,8 +44,8 @@ public:
         if (serial_fd_ >= 0) {
             close(serial_fd_);
         }
-        save_data_to_csv();
-        plot_data();
+        //save_data_to_csv();
+        //plot_data();
     }
 
 private:
@@ -61,77 +61,46 @@ private:
 
     void connect_serial()
     {
-        // Buscar puertos
-        std::vector<std::string> ports;
-        glob_t glob_result;
-        glob("/dev/ttyUSB*", GLOB_TILDE, NULL, &glob_result);
-        for(unsigned int i=0; i<glob_result.gl_pathc; ++i){
-            ports.push_back(std::string(glob_result.gl_pathv[i]));
-        }
-        globfree(&glob_result);
-        
-        glob("/dev/ttyACM*", GLOB_TILDE, NULL, &glob_result);
-        for(unsigned int i=0; i<glob_result.gl_pathc; ++i){
-            ports.push_back(std::string(glob_result.gl_pathv[i]));
-        }
-        globfree(&glob_result);
+        const std::string port = "/dev/gps_neo6";
 
-        if (ports.empty()) {
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "❌ No se encontraron puertos seriales (/dev/ttyUSB* o ACM*)");
+        int fd = open(port.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+        if (fd < 0) {
+            RCLCPP_ERROR(this->get_logger(),
+                "❌ No se pudo abrir el GPS en %s (Error %d: %s)",
+                port.c_str(), errno, strerror(errno));
             return;
         }
 
-        for (const auto& port : ports) {
-            int fd = open(port.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-            if (fd < 0) {
-                RCLCPP_WARN(this->get_logger(), "❌ No se pudo abrir %s (Error %d: %s). Verifica permisos o si está ocupado.", 
-                    port.c_str(), errno, strerror(errno));
-                continue;
-            }
-            
-            if (fd >= 0) {
-                // Configurar serial 9600 8N1
-                struct termios tty;
-                tcgetattr(fd, &tty);
-                cfsetospeed(&tty, B9600);
-                cfsetispeed(&tty, B9600);
-                tty.c_cflag &= ~PARENB;
-                tty.c_cflag &= ~CSTOPB;
-                tty.c_cflag &= ~CSIZE;
-                tty.c_cflag |= CS8;
-                tty.c_cflag |= CREAD | CLOCAL;
-                tty.c_lflag &= ~ICANON; // Raw mode
-                tty.c_lflag &= ~ECHO; 
-                tty.c_lflag &= ~ECHOE; 
-                tty.c_lflag &= ~ISIG;
-                tty.c_iflag &= ~(IXON | IXOFF | IXANY);
-                tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); 
-                tcsetattr(fd, TCSANOW, &tty);
-                
-                // Probar si envia NMEA (Intentar varias lecturas)
-                int attempts = 10;
-                bool found = false;
-                while(attempts-- > 0) {
-                    char buf[256];
-                    int n = read(fd, buf, sizeof(buf)-1);
-                    if (n > 0) {
-                        buf[n] = 0;
-                        std::string data(buf);
-                        if (data.find("$G") != std::string::npos) {
-                            serial_fd_ = fd;
-                            port_name_ = port;
-                            RCLCPP_INFO(this->get_logger(), "✅ GPS conectado en: %s", port.c_str());
-                            found = true;
-                            break;
-                        }
-                    }
-                    usleep(100000); // Esperar 100ms
-                }
-                
-                if (found) return;
-                close(fd);
-            }
+        // Configurar serial 9600 8N1
+        struct termios tty;
+        memset(&tty, 0, sizeof tty);
+
+        if (tcgetattr(fd, &tty) != 0) {
+            RCLCPP_ERROR(this->get_logger(), "❌ Error en tcgetattr");
+            close(fd);
+            return;
         }
+
+        cfsetospeed(&tty, B9600);
+        cfsetispeed(&tty, B9600);
+
+        tty.c_cflag &= ~PARENB;
+        tty.c_cflag &= ~CSTOPB;
+        tty.c_cflag &= ~CSIZE;
+        tty.c_cflag |= CS8;
+        tty.c_cflag |= CREAD | CLOCAL;
+
+        tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+        tty.c_iflag &= ~(IXON | IXOFF | IXANY);
+        tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL);
+        tty.c_oflag &= ~OPOST;
+
+        tcsetattr(fd, TCSANOW, &tty);
+
+        serial_fd_ = fd;
+        port_name_ = port;
+
+        RCLCPP_INFO(this->get_logger(), "✅ GPS conectado en %s", port.c_str());
     }
 
     void read_serial_data()

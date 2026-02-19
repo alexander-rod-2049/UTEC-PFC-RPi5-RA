@@ -26,11 +26,11 @@ class ImuBNO08XPublisher(Node):
         # self.tf_broadcaster = TransformBroadcaster(self) 
         
         try:
-            self.ser = serial.Serial('/dev/ttyACM0', 115200, timeout=0.1) # Lowered timeout for better loop performance
+            self.ser = serial.Serial('/dev/imu_bno08x', 115200, timeout=0.1) # Lowered timeout for better loop performance
             time.sleep(2)
-            self.get_logger().info("Serial connection established on /dev/ttyACM0")
+            self.get_logger().info("Serial connection established on /dev/imu_bno08x")
         except serial.SerialException:
-             self.get_logger().error("FATAL: Could not open /dev/ttyACM0. Is the sensor plugged in?")
+             self.get_logger().error("FATAL: Could not open /dev/imu_bno08x. Is the sensor plugged in?")
              exit(1)
 
     def timer_callback(self):

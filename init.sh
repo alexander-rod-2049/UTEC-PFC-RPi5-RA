@@ -41,7 +41,7 @@ echo "ros2 topic list"
 echo "ros2 topic pub -r 10 /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.05, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'"
 echo "ls -l /dev/ttyACM*"
 #echo "ros2 run teleop_twist_keyboard teleop_twist_keyboard"
-echo "ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p speed:=0.15 -p turn:=0.15"
+echo "ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p speed:=0.20 -p turn:=0.15"
 
 echo ""
 echo "Inicialización completada. Workspace listo para usar."

@@ -17,7 +17,7 @@ ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. 
     # The device name to be opened. Change this to your actual device you are using.
     # Both USB and UART devices are supported. The device name is the
     # name of the device as it appears in the /dev directory.
-    device_name: "/dev/ttyACM1"  # REQUIRED. Driver will FATAL if not provided.
+    device_name: "/dev/roboclaw"  # REQUIRED. Driver will FATAL if not provided.
     baud_rate: 38400 # This does not apply when using USB.
 
     # The assigned port for the device (as configured on the RoboClaw).
@@ -37,14 +37,14 @@ ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. 
     # m2_qpps: 134640
 
     # Gananciassintonizadas con Basic Micro Studio.
-    m1_p: 1.0968612
-    m1_i: 0.193604
+    m1_p: 1.1463676
+    m1_i: 0.1965648
     m1_d: 0.0
-    m1_qpps: 158730
-    m2_p: 1.154838
-    m2_i: 0.2165488
+    m1_qpps: 142890
+    m2_p: 1.194306
+    m2_i: 0.2108
     m2_d: 0.0
-    m2_qpps: 141570
+    m2_qpps: 143550
     # Ganancias a probar para que no se vuelvan locos los motores.
     # m1_p: 1.3968612
     # m1_i: 0.0
@@ -54,6 +54,7 @@ ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. 
     # m2_i: 0.0
     # m2_d: 0.0
     # m2_qpps: 141570
+    
 
     # The maximum expected current (in amps) for both motors.
     # Used just to signal warnings.
@@ -62,21 +63,21 @@ ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. 
 
     # Rate limiting commands. The driver will clip any value
     # exceeding these limits.
-    max_angular_velocity: 0.5
-    max_linear_velocity: 1.0
+    max_angular_velocity: 0.75
+    max_linear_velocity: 1.25
 
     # If no new motor commands is received since the last motor
     # command in this number of seconds, stop the motors.
-    max_seconds_uncommanded_travel: 0.5
+    max_seconds_uncommanded_travel: 3.5
 
     # [NUEVO] Watchdog para cmd_vel. Si no se reciben comandos en este tiempo (ms),
     # los motores se detendrán.
-    cmd_vel_timeout_ms: 2500 # 500
+    cmd_vel_timeout_ms: 3500 # 500
 
     # [NUEVO] Detección de velocidad descontrolada (Runaway). Si la velocidad de odometría
     # supera estos límites, el nodo se apagará por seguridad.
-    max_runaway_linear_velocity: 1.5  # Ligeramente superior a max_linear_velocity
-    max_runaway_angular_velocity: 1.1 # Ligeramente superior a max_angular_velocity
+    max_runaway_linear_velocity: 2.25  # Ligeramente superior a max_linear_velocity
+    max_runaway_angular_velocity: 1.15 # Ligeramente superior a max_angular_velocity
 
     # [NUEVO] Detección de bloqueo de motor o desconexión de encoder.
     # Si el motor recibe una orden de moverse por encima de 'qpps_threshold' pero el
@@ -93,7 +94,7 @@ ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. 
     publish_odom: true
     odom_rate_hz: 20
 
-    publish_odom_tf: true
+    publish_odom_tf: false
 
     # Based upon your particular motor gearing and encoders. Importante. Además también dependen de los parámetros de rueda y separación de ruedas.
     # These values are used to scale cmd_vel commands
@@ -109,7 +110,7 @@ ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. 
 
     # Topic name to be used to publish the RoboClaw status messages.
     roboclaw_status_topic: "roboclaw_status"
-    loop_sleep_ms: 10
+    loop_sleep_ms: 50
     
     # How often to publish /roboclaw_status
     status_rate_hz: 1
