@@ -1,0 +1,22 @@
+polar_action_server:
+  ros__parameters:
+    # Ganancias del controlador Polar
+    k_rho: 0.3
+    k_alpha: 0.8
+    k_beta: -0.15
+    # Límites de velocidad
+    max_v: 0.22
+    max_w: 1.0
+    # Tolerancias
+    dist_tolerance: 0.05
+    yaw_tolerance: 0.1
+
+smc_dfl_action_server:
+  ros__parameters:
+    lambda1: 4.0
+    lambda2: 4.0
+    k1: 1.1
+    k2: 1.1
+    eps_v: 0.02
+    max_v: 0.22
+    max_w: 2.0
