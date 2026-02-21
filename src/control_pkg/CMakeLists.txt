@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(nav2_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -35,9 +36,19 @@ ament_target_dependencies(point_control_node
   nav_msgs
 )
 
+add_executable(mission_manager_smc_dfl src/mission_manager_smc_dfl.cpp)
+ament_target_dependencies(mission_manager_smc_dfl
+  rclcpp
+  geometry_msgs
+  nav_msgs
+  nav2_msgs
+  rclcpp_action
+)
+
 install(TARGETS
   system_id_logger
   point_control_node
+  mission_manager_smc_dfl
   DESTINATION lib/${PROJECT_NAME}
 )
 
