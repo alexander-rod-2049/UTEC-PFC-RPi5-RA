@@ -12,6 +12,7 @@
 #include "pfc_msgs/msg/system_status.hpp" // Mensaje de salud
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2/LinearMath/Matrix3x3.h"
+#include "geometry_msgs/msg/twist.hpp"
 
 double normalize_angle(double angle) {
     while (angle > M_PI) angle -= 2.0 * M_PI;
@@ -36,7 +37,7 @@ public:
 
         refresh_parameters();
 
-        cmd_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>("/cmd_vel", 10);
+        cmd_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
         
         odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
             "/odometry/filtered", 10,
@@ -61,7 +62,7 @@ public:
 
 private:
     rclcpp_action::Server<NavigateToPose>::SharedPtr action_server_;
-    rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr cmd_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
     rclcpp::Subscription<pfc_msgs::msg::SystemStatus>::SharedPtr health_sub_;
 
@@ -153,11 +154,11 @@ private:
                 break;
             }
 
-            auto cmd = geometry_msgs::msg::TwistStamped();
-            cmd.header.stamp = this->now();
-            cmd.header.frame_id = "base_link";
-            cmd.twist.linear.x = std::clamp(v, -max_v, max_v);
-            cmd.twist.angular.z = std::clamp(w, -max_w, max_w);
+            auto cmd = geometry_msgs::msg::Twist();
+            //cmd.header.stamp = this->now();
+            //cmd.header.frame_id = "base_link";
+            cmd.linear.x = std::clamp(v, -max_v, max_v);
+            cmd.angular.z = std::clamp(w, -max_w, max_w);
             cmd_pub_->publish(cmd);
 
             feedback->distance_remaining = rho;
@@ -168,8 +169,9 @@ private:
     }
 
     void stop_robot() {
-        auto cmd = geometry_msgs::msg::TwistStamped();
-        cmd.header.stamp = this->now();
+        auto cmd = geometry_msgs::msg::Twist(); // CORRECCIÓN: Debe ser Twist, no TwistStamped
+        cmd.linear.x = 0.0;
+        cmd.angular.z = 0.0;
         cmd_pub_->publish(cmd);
     }
 

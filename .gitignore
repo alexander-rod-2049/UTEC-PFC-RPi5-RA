@@ -25,6 +25,8 @@ pfc_test_*/
 pfc_oruga_test_*/
 pfc_nav2_test_*/
 imu_ang_vel_debug_*/
+bags/
+
 
 # Large SDKs or specific folders
 src/OrbbecSDK_ROS2/

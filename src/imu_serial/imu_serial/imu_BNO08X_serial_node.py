@@ -69,6 +69,20 @@ class ImuBNO08XPublisher(Node):
                         msg.orientation_covariance = [0.01, 0.0, 0.0,
                                                     0.0, 0.01, 0.0,
                                                     0.0, 0.0, 0.01]
+
+                        # Velocidad Angular (Crucial para el Yaw del EKF)
+                        msg.angular_velocity_covariance = [
+                            0.01, 0.0, 0.0,
+                            0.0, 0.01, 0.0,
+                            0.0, 0.0, 0.01
+                        ]
+                        
+                        # Aceleración Lineal (Importante si se activa X o Y en el config)
+                        msg.linear_acceleration_covariance = [
+                            0.9, 0.0, 0.0,
+                            0.0, 0.9, 0.0,
+                            0.0, 0.0, 0.9
+                        ]
                         
                         # Magnetometer Data
                         mag_msg = MagneticField()

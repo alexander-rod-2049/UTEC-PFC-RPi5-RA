@@ -68,16 +68,16 @@ ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. 
 
     # If no new motor commands is received since the last motor
     # command in this number of seconds, stop the motors.
-    max_seconds_uncommanded_travel: 3.5
+    max_seconds_uncommanded_travel: 4.0
 
     # [NUEVO] Watchdog para cmd_vel. Si no se reciben comandos en este tiempo (ms),
     # los motores se detendrán.
-    cmd_vel_timeout_ms: 3500 # 500
+    cmd_vel_timeout_ms: 4500 # 500
 
     # [NUEVO] Detección de velocidad descontrolada (Runaway). Si la velocidad de odometría
     # supera estos límites, el nodo se apagará por seguridad.
-    max_runaway_linear_velocity: 2.25  # Ligeramente superior a max_linear_velocity
-    max_runaway_angular_velocity: 1.15 # Ligeramente superior a max_angular_velocity
+    max_runaway_linear_velocity: 2.5  # Ligeramente superior a max_linear_velocity
+    max_runaway_angular_velocity: 4.0 # Ligeramente superior a max_angular_velocity
 
     # [NUEVO] Detección de bloqueo de motor o desconexión de encoder.
     # Si el motor recibe una orden de moverse por encima de 'qpps_threshold' pero el
@@ -110,10 +110,10 @@ ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. 
 
     # Topic name to be used to publish the RoboClaw status messages.
     roboclaw_status_topic: "roboclaw_status"
-    loop_sleep_ms: 50
+    loop_sleep_ms: 20
     
     # How often to publish /roboclaw_status
-    status_rate_hz: 1
+    status_rate_hz: 5
 
 
     # Debugging control.

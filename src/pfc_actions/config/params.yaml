@@ -1,15 +1,19 @@
+health_node:
+  ros__parameters:
+    check_imu: true
+    check_motors: true
+    check_odom: true
+    check_flow: false # Cambia a true si el MTF-02P revive
+
 polar_action_server:
   ros__parameters:
-    # Ganancias del controlador Polar
     k_rho: 0.3
-    k_alpha: 0.8
+    k_alpha: 0.4
     k_beta: -0.15
-    # Límites de velocidad
-    max_v: 0.22
-    max_w: 1.0
-    # Tolerancias
+    max_v: 0.5
+    max_w: 0.8
     dist_tolerance: 0.05
-    yaw_tolerance: 0.1
+    yaw_tolerance: 0.35
 
 smc_dfl_action_server:
   ros__parameters:
@@ -17,6 +21,8 @@ smc_dfl_action_server:
     lambda2: 4.0
     k1: 1.1
     k2: 1.1
+    k1_sta: 1.5
+    k2_sta: 0.8
     eps_v: 0.02
-    max_v: 0.22
-    max_w: 2.0
+    max_v: 1.5
+    max_w: 1.0
