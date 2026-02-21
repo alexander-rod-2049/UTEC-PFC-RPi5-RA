@@ -69,10 +69,13 @@ add_executable(bt_manager src/bt_manager.cpp)
 ament_target_dependencies(bt_manager
   rclcpp
   behaviortree_cpp
+  behaviortree_ros2
+  nav2_msgs
   ament_index_cpp
+  geometry_msgs
 )
 # Vinculamos con el plugin para asegurar visibilidad
-target_link_libraries(bt_manager follow_smc_path_plugin)
+#target_link_libraries(bt_manager follow_smc_path_plugin)
 
 # 2. Compilar el Plugin del Action Node (SMC+DFL)
 add_library(follow_smc_path_plugin SHARED

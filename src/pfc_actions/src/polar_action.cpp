@@ -85,6 +85,7 @@ private:
         const rclcpp_action::GoalUUID & uuid,
         std::shared_ptr<const NavigateToPose::Goal> goal)
     {
+        (void)goal;
         (void)uuid;
         // No aceptar metas si el sistema está en falla desde el inicio
         if (last_health_status_ && last_health_status_->status_message.find("FAULT") != std::string::npos) {
