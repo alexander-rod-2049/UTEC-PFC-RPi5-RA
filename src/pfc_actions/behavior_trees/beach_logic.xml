@@ -1,0 +1,27 @@
+<root BTCPP_format="4">
+  <BehaviorTree ID="BeachCleaningMission">
+    <ReactiveSequence name="main_loop">
+      
+      <Sequence name="safety_checks">
+        <Condition ID="IsBatteryOk" min_voltage="21.0"/>
+        <Condition ID="IsSystemHealthy"/>
+      </Sequence>
+
+      <Sequence name="cleaning_sequence">
+        
+        <Action ID="AlignOrientation" 
+                target_pose="{goal_pose}" 
+                tolerance="0.1"/>
+
+        <Action ID="FollowSMCPath" 
+                target_pose="{goal_pose}" 
+                T_total="30.0"
+                max_v="0.8"/>
+
+        <Action ID="SaySuccess" message="¡Misión cumplida en la arena!"/>
+        
+      </Sequence>
+
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>

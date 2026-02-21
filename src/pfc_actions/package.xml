@@ -18,6 +18,8 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>pfc_msgs</depend>
   <depend>ros2_roboclaw_driver</depend>
+  <depend>behaviortree_cpp</depend>
+  <depend>behaviortree_ros2</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
