@@ -62,6 +62,7 @@ public:
         // Inicializar variables de velocidad previa
         vel_x_prev_ = 0.0;
         vel_y_prev_ = 0.0;
+        constexpr double DISTANCIA_REF_MM = 200.0;
     }
 
     ~MTF02POdometry()
@@ -110,6 +111,8 @@ private:
 
         double altura_real_mm = static_cast<double>(dist_medida) + offset_mm_;
         double altura_m = altura_real_mm / 1000.0;
+        double altura_rel_mm = DISTANCIA_REF_MM - altura_real_mm;
+        double altura_rel_m  = altura_rel_mm / 1000.0;
 
         auto now = this->now();
         double dt = (now - last_time_).seconds();
@@ -141,6 +144,9 @@ private:
         odom_msg.twist.twist.linear.x = vel_x;
         odom_msg.twist.twist.linear.y = vel_y;
 
+        // Publicar la altura relativa en el suelo para ver como varia la suspensión:
+        odom_msg.pose.pose.position.z = altura_rel_m;
+
         // Configurar covarianza del twist
         // Inicializar toda la covarianza a cero
         for (int i = 0; i < 36; ++i) {
@@ -159,7 +165,10 @@ private:
         for (int i = 0; i < 36; ++i) {
             odom_msg.pose.covariance[i] = 1e6;
         }
-
+        
+        // Posición Z (altura relativa medida por ToF)
+        odom_msg.pose.covariance[14] = 0.0001; // (0.01 m)^2 → 1 cm de desviación típica
+        
         odom_pub_->publish(odom_msg);
 
         // Para depuración (opcional):
