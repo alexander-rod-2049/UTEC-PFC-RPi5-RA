@@ -14,7 +14,15 @@ public:
         timer_ = this->create_wall_timer(std::chrono::seconds(2), std::bind(&MissionManager::run_fsm, this));
         
         // Waypoints de ejemplo para limpieza (x, y)
-        waypoints_ = {{1.0, 0.0}, {1.0, 0.5}, {0.0, 1.0}, {0.0, 0.0}};
+        // Trayectoria tipo "Serpentina" para cobertura de área
+waypoints_ = {
+    {1.2, 0.0},   // Avance inicial (Línea 1)
+    {1.2, 0.4},   // Desplazamiento lateral
+    {0.2, 0.4},   // Regreso (Línea 2)
+    {0.2, 0.8},   // Desplazamiento lateral
+    {1.2, 0.8},   // Avance (Línea 3)
+    {0.0, 0.0}    // Retorno al origen (Home)
+};
     }
 
 private:

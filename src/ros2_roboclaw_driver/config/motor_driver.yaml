@@ -63,8 +63,8 @@ ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. 
 
     # Rate limiting commands. The driver will clip any value
     # exceeding these limits.
-    max_angular_velocity: 0.75
-    max_linear_velocity: 1.25
+    max_angular_velocity: 1.5
+    max_linear_velocity: 1.5
 
     # If no new motor commands is received since the last motor
     # command in this number of seconds, stop the motors.
@@ -86,7 +86,7 @@ ros2_roboclaw_driver_node: # Must match the node name in motor_driver_node.cpp. 
     # stall_detection_qpps_threshold: 1000 # Umbral de velocidad (pulsos/seg) para activar la detección
 
     stall_detection_period_ms: 5000
-    stall_detection_qpps_threshold: 50000 # Umbral de velocidad (pulsos/seg) para activar la detección
+    stall_detection_qpps_threshold: 3500 # Umbral de velocidad (pulsos/seg) para activar la detección
     # NUEVA ESTRUCTURA EN BABY_STEPS
     publish_joint_states: true
     joint_state_rate_hz: 20

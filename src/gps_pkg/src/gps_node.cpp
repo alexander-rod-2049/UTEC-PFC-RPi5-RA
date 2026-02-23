@@ -1,5 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>  // NUEVO
 #include <vector>
 #include <string>
 #include <deque>
@@ -27,6 +28,9 @@ public:
     GpsNode() : Node("gps_node")
     {
         publisher_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", 10);
+        // NUEVO: Publicador para la posición cartesiana con covarianza
+        pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("gps/pose", 10);
+        
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(100),
             std::bind(&GpsNode::timer_callback, this));
@@ -190,8 +194,6 @@ private:
 
                     // Calcular X, Y, Z relativos (en metros)
                     // Aproximación de tierra plana local
-                    // 1 deg Lat ~= 111132 m
-                    // 1 deg Lon ~= 111132 * cos(lat) m
                     double d_lat = avg_lat - start_lat_;
                     double d_lon = avg_lon - start_lon_;
                     
@@ -213,6 +215,7 @@ private:
                     dp.z = z;
                     data_log_.push_back(dp);
 
+                    // Publicar mensaje NavSatFix (original)
                     auto msg = sensor_msgs::msg::NavSatFix();
                     msg.header.stamp = this->now();
                     msg.header.frame_id = "gps";
@@ -222,6 +225,31 @@ private:
                     msg.altitude = avg_alt;
                     
                     publisher_->publish(msg);
+
+                    // NUEVO: Publicar posición cartesiana con covarianza
+                    if (has_fix_) {
+                        auto pose_msg = geometry_msgs::msg::PoseWithCovarianceStamped();
+                        pose_msg.header.stamp = msg.header.stamp;  // mismo timestamp
+                        pose_msg.header.frame_id = "odom";  // marco de referencia (ajústalo si prefieres "map")
+                        pose_msg.pose.pose.position.x = x;
+                        pose_msg.pose.pose.position.y = y;
+                        pose_msg.pose.pose.position.z = z;
+                        pose_msg.pose.pose.orientation.w = 1.0;  // orientación desconocida
+
+                        // Covarianza de la posición (6x6). Solo las componentes de posición tienen incertidumbre.
+                        // Usamos un valor típico de 2.5 metros de desviación estándar en horizontal,
+                        // y 5.0 metros en vertical (la altitud suele ser menos precisa).
+                        // Si tu GPS proporciona HDOP/VDOP, podrías calcularlo dinámicamente.
+                        double var_h = 2.5 * 2.5;   // varianza horizontal
+                        double var_v = 5.0 * 5.0;   // varianza vertical
+                        pose_msg.pose.covariance[0] = var_h;   // x
+                        pose_msg.pose.covariance[7] = var_h;   // y
+                        pose_msg.pose.covariance[14] = var_v;  // z
+                        // Las demás entradas (orientación y cross-covarianzas) se quedan en 0,
+                        // lo que indica que no tenemos información o son desconocidas.
+
+                        pose_pub_->publish(pose_msg);
+                    }
                     
                     // RCLCPP_INFO(this->get_logger(), "🎯 FILTERED (C++): Lat=%.6f, Lon=%.6f, Alt=%.1fm (Sats: %zu)", 
                     //    avg_lat, avg_lon, avg_alt, lat_buffer_.size());
@@ -269,6 +297,8 @@ private:
     }
 
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr publisher_;
+    // NUEVO: Publisher para la posición cartesiana
+    rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
     int serial_fd_ = -1;
     std::string port_name_;

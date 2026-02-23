@@ -242,8 +242,9 @@ void MotorDriver::processCmdVel() {
         std::clamp((double)cached_cmd_vel_.twist.linear.x, -(double)max_linear_velocity_, (double)max_linear_velocity_);
     const double yaw_velocity = std::clamp((double)cached_cmd_vel_.twist.angular.z, -(double)max_angular_velocity_,
                                            (double)max_angular_velocity_);
-    const double m1_desired_velocity = x_velocity - (yaw_velocity * wheel_separation_ / 2.0) / wheel_radius_;
-    const double m2_desired_velocity = x_velocity + (yaw_velocity * wheel_separation_ / 2.0) / wheel_radius_;
+    // El segundo término antes estaba dividido por wheel_radius lo cual creaba una incosistencia de unidades.
+    const double m1_desired_velocity = x_velocity - (yaw_velocity * wheel_separation_ / 2.0);
+    const double m2_desired_velocity = x_velocity + (yaw_velocity * wheel_separation_ / 2.0);
     const int32_t m1_qpps = (int32_t)(m1_desired_velocity * quad_pulses_per_meter_);
     const int32_t m2_qpps = (int32_t)(m2_desired_velocity * quad_pulses_per_meter_);
     const int32_t m1_max_distance = (int32_t)fabs(m1_qpps * max_seconds_uncommanded_travel_);

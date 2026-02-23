@@ -3,17 +3,15 @@ health_node:
     check_imu: true
     check_motors: true
     check_odom: true
-    check_flow: false # Cambia a true si el MTF-02P revive
+    check_flow: true # Cambia a true si el MTF-02P revive
 
 polar_action_server:
   ros__parameters:
-    k_rho: 0.3
-    k_alpha: 0.4
-    k_beta: -0.15
-    max_v: 0.5
-    max_w: 0.8
-    dist_tolerance: 0.05
-    yaw_tolerance: 0.35
+    k_rho: 0.8    # Velocidad de acercamiento
+    k_alpha: 0.8  # Ganancia de giro hacia el punto (más alta = giro más rápido)
+    k_beta: -0.1  # Ganancia de orientación final (mantener baja para no oscilar)
+    max_v: 0.8  # Velocidad lineal máxima (m/s)
+    max_w: 2.0   # Velocidad angular máxima (rad/s)
 
 smc_dfl_action_server:
   ros__parameters:
@@ -21,8 +19,8 @@ smc_dfl_action_server:
     lambda2: 4.0
     k1: 1.1
     k2: 1.1
-    k1_sta: 1.5
-    k2_sta: 0.8
-    eps_v: 0.02
-    max_v: 1.5
-    max_w: 1.0
+    k1_sta: 0.5   # Antes probablemente estaba en 2.0 o más. Bajémoslo.
+    k2_sta: 0.01  # La ganancia integral del STA debe ser pequeña.
+    eps_v: 0.1
+    max_v: 0.4
+    max_w: 0.6

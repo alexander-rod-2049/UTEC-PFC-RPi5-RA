@@ -45,10 +45,21 @@ ament_target_dependencies(mission_manager_smc_dfl
   rclcpp_action
 )
 
+add_executable(mission_manager_polar src/mission_manager_polar.cpp)
+ament_target_dependencies(mission_manager_polar
+  rclcpp
+  geometry_msgs
+  nav_msgs
+  nav2_msgs
+  rclcpp_action
+  tf2
+)
+
 install(TARGETS
   system_id_logger
   point_control_node
   mission_manager_smc_dfl
+  mission_manager_polar
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -68,7 +68,7 @@ class ImuBNO08XPublisher(Node):
                         # 0.01 is standard for "trust this sensor"
                         msg.orientation_covariance = [0.01, 0.0, 0.0,
                                                     0.0, 0.01, 0.0,
-                                                    0.0, 0.0, 0.01]
+                                                    0.0, 0.0, 0.3]
 
                         # Velocidad Angular (Crucial para el Yaw del EKF)
                         msg.angular_velocity_covariance = [

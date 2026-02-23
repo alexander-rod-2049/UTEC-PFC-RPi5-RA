@@ -62,7 +62,6 @@ public:
         // Inicializar variables de velocidad previa
         vel_x_prev_ = 0.0;
         vel_y_prev_ = 0.0;
-        constexpr double DISTANCIA_REF_MM = 200.0;
     }
 
     ~MTF02POdometry()
@@ -71,6 +70,9 @@ public:
     }
 
 private:
+    // Constante de clase para que sea accesible en decodePayload
+    static constexpr double DISTANCIA_REF_MM = 200.0;
+
     void readSerial()
     {
         uint8_t buf[256];
@@ -103,7 +105,7 @@ private:
     {
         if (payload.size() < 20) return;
 
-        uint32_t contador = *reinterpret_cast<const uint32_t*>(&payload[0]);
+        // uint32_t contador = *reinterpret_cast<const uint32_t*>(&payload[0]); // No se usa actualmente
         uint32_t dist_medida = *reinterpret_cast<const uint32_t*>(&payload[4]);
         int16_t flow_raw_x = *reinterpret_cast<const int16_t*>(&payload[12]);
         int16_t flow_raw_y = *reinterpret_cast<const int16_t*>(&payload[14]);
@@ -115,65 +117,47 @@ private:
         double altura_rel_m  = altura_rel_mm / 1000.0;
 
         auto now = this->now();
-        double dt = (now - last_time_).seconds();
+        // double dt = (now - last_time_).seconds(); // No se usa actualmente
         last_time_ = now;
 
         double vel_x, vel_y;
-        if (calidad > 50) {
+        if (calidad > 5) {
             double vel_x_cm = flow_raw_x * altura_m;
             double vel_y_cm = flow_raw_y * altura_m;
             vel_x = vel_x_cm / 100.0;
             vel_y = -(vel_y_cm / 100.0);
-            // Actualizar valores previos solo cuando la calidad es buena
             vel_x_prev_ = vel_x;
             vel_y_prev_ = vel_y;
         } else {
-            // Usar el último valor válido
             vel_x = vel_x_prev_;
             vel_y = vel_y_prev_;
-            // No actualizamos prev_ con estos valores porque son repeticiones
         }
 
-        // Crear mensaje de odometría
         nav_msgs::msg::Odometry odom_msg;
         odom_msg.header.stamp = now;
         odom_msg.header.frame_id = frame_id_;
         odom_msg.child_frame_id = child_frame_id_;
 
-        // Asignar velocidades
         odom_msg.twist.twist.linear.x = vel_x;
         odom_msg.twist.twist.linear.y = vel_y;
-
-        // Publicar la altura relativa en el suelo para ver como varia la suspensión:
         odom_msg.pose.pose.position.z = altura_rel_m;
 
-        // Configurar covarianza del twist
-        // Inicializar toda la covarianza a cero
         for (int i = 0; i < 36; ++i) {
             odom_msg.twist.covariance[i] = 0.0;
         }
-        // Asignar varianzas para las velocidades lineales
-        odom_msg.twist.covariance[0] = 0.08;   // vx (menor confianza: 0.08 ≈ 0.283 m/s de desviación)
-        odom_msg.twist.covariance[1] = 0.04;   // vy (0.2 m/s de desviación, más confianza)
-        // Velocidades angulares y lineal z (no medidas) con varianza muy alta
-        odom_msg.twist.covariance[2] = 1e6;    // vz
-        odom_msg.twist.covariance[3] = 1e6;    // wx
-        odom_msg.twist.covariance[4] = 1e6;    // wy
-        odom_msg.twist.covariance[5] = 1e6;    // wz
+        odom_msg.twist.covariance[0] = 0.08;
+        odom_msg.twist.covariance[1] = 0.04;
+        odom_msg.twist.covariance[2] = 1e6;
+        odom_msg.twist.covariance[3] = 1e6;
+        odom_msg.twist.covariance[4] = 1e6;
+        odom_msg.twist.covariance[5] = 1e6;
 
-        // (Opcional) Covarianza de pose: si no se usa, poner valores altos
         for (int i = 0; i < 36; ++i) {
             odom_msg.pose.covariance[i] = 1e6;
         }
-        
-        // Posición Z (altura relativa medida por ToF)
-        odom_msg.pose.covariance[14] = 0.0001; // (0.01 m)^2 → 1 cm de desviación típica
+        odom_msg.pose.covariance[14] = 0.0001;
         
         odom_pub_->publish(odom_msg);
-
-        // Para depuración (opcional):
-        // RCLCPP_INFO(this->get_logger(), "H: %.1f mm, Vx: %.3f m/s, Vy: %.3f m/s, Qual: %d",
-        //             altura_real_mm, vel_x, vel_y, calidad);
     }
 
     int fd_;
@@ -187,7 +171,6 @@ private:
     std::string child_frame_id_;
     rclcpp::Time last_time_;
 
-    // Nuevas variables para guardar velocidades previas
     double vel_x_prev_;
     double vel_y_prev_;
 };

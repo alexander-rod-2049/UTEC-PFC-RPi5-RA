@@ -35,9 +35,11 @@ ament_target_dependencies(goto_action
   pfc_msgs
 )
 
-add_executable(polar_action src/polar_action.cpp)
+# 1. Cambia el nombre aquí
+add_executable(polar_action_server src/polar_action.cpp) 
 
-ament_target_dependencies(polar_action
+# 2. Y aquí también para las dependencias
+ament_target_dependencies(polar_action_server
   rclcpp
   rclcpp_action
   geometry_msgs
@@ -65,7 +67,7 @@ ament_target_dependencies(smc_dfl_action
 # 4. Instalación
 install(TARGETS
   goto_action
-  polar_action
+  polar_action_server
   health_node
   smc_dfl_action
   DESTINATION lib/${PROJECT_NAME}

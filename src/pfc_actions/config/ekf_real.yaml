@@ -10,6 +10,31 @@ ekf_filter_node:
     odom_frame: odom
     base_link_frame: base_link
     world_frame: odom
+# robot_localization state vector mask:
+# posición:
+# 0: x
+# 1: y
+# 2: z
+#
+# orientación:
+# 3: roll
+# 4: pitch
+# 5: yaw
+#
+# velocidad lineal:
+# 6: vx
+# 7: vy
+# 8: vz
+#
+# velocidad angular:
+# 9: vroll
+# 10: vpitch
+# 11: vyaw
+#
+# aceleración lineal:
+# 12: ax
+# 13: ay
+# 14: az
 
     # Motores (RoboClaw)
     odom0: /sigyn/wheel_odom
@@ -18,11 +43,22 @@ ekf_filter_node:
 
     # IMU (BNO08X)
     imu0: /imu_topic
-    imu0_config: [false, false, false, false, false, true, false, false, false, false, false, true, false, false, false]
+    imu0_config: [false, false, false, false, false, false, false, false, false, false, false, true, false, false, false]
     imu0_relative: true
     imu0_remove_gravitational_acceleration: true
 
     # Flujo Óptico (MTF-02P), comentar si es que no está dando datos y queremos aún así hacer pruebas.
     odom1: /sensor/odom
-    odom1_config: [false, false, false, false, false, false, true, true, false, false, false, false, false, false, false]
+    odom1_config: [false, false, false, false, false, false, true, false, false, false, false, false, false, false, false]
     odom1_relative: true
+    odom1_queue_size: 10
+    odom1_nodelay: true
+
+
+    # GPS (convertido por navsat_transform_node)
+    #odom2: /odometry/gps
+    #odom2_config: [true, true, false, false, false, false, false, false, false, false, false, false, false, false, false]
+    #odom2_queue_size: 10
+    #odom2_nodelay: true
+    #odom2_differential: false
+    #odom2_relative: false

@@ -146,9 +146,14 @@ private:
             double v = K_rho * rho;
             double w = K_alpha * alpha + K_beta * beta;
 
-            if (std::abs(alpha) > M_PI / 2.0) v = 0.0;
+            // if (std::abs(alpha) > 0.52) { 
+            //         v = 0.0; 
+            //     } else {
+            //         // Si estamos alineados, reduce v proporcionalmente si aún hay pequeño error de alpha
+            //         v *= std::cos(alpha); 
+            //     }
 
-            if (rho < 0.05 && std::abs(normalize_angle(yaw_obj - cur_yaw_)) < 0.1) {
+            if (rho < 0.1 && std::abs(normalize_angle(yaw_obj - cur_yaw_)) < 0.1) {
                 stop_robot();
                 goal_handle->succeed(result);
                 break;
